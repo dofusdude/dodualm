@@ -7,7 +7,7 @@ toolchain go1.23.0
 require (
 	github.com/charmbracelet/log v0.4.0
 	github.com/dofusdude/dodumap v0.5.5
-	github.com/go-chi/chi/v5 v5.0.12
+	github.com/go-chi/chi/v5 v5.1.0
 	github.com/golang-migrate/migrate v3.5.4+incompatible
 	github.com/google/go-github/v67 v67.0.0
 	github.com/mattn/go-sqlite3 v1.14.24
