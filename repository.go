@@ -40,8 +40,6 @@ func (r *Repository) Init(ctx context.Context, workdir string) error {
 		} else {
 			return err
 		}
-	} else {
-		log.Info("Found database")
 	}
 
 	sqliteDatabase, err := sql.Open("sqlite3", dbpath)

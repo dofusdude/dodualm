@@ -31,6 +31,8 @@ var (
 	MeiliHost   string
 	MeiliKey    string
 
+	Database *Repository
+
 	rootCmd = &cobra.Command{
 		Use:           "dodualm",
 		Short:         DodualmShort,
@@ -52,15 +54,15 @@ var (
 
 	migrateDownCmd = &cobra.Command{
 		Use:   "down",
-		Short: "migrate from v2 to v1",
-		Long:  `Command to downgrade database from v2 to v1`,
+		Short: "run migrations for downgrading",
+		Long:  `Command to downgrade database`,
 		Run:   migrateDown,
 	}
 
 	migrateUpCmd = &cobra.Command{
-		Use:   "down",
-		Short: "migrate from v2 to v1",
-		Long:  `Command to downgrade database from v2 to v1`,
+		Use:   "up",
+		Short: "run migrations for upgrading",
+		Long:  `Command to upgrade database`,
 		Run:   migrateUp,
 	}
 )
@@ -126,6 +128,26 @@ func rootCommand(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
+	dbdir, err := cmd.Flags().GetString("dbdir")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	gameVersion, err := cmd.Flags().GetString("game-version")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	Database = NewDatabaseRepository(context.Background(), dbdir)
+	defer Database.Deinit()
+
+	almanaxData, err := loadAlmanaxData(gameVersion)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Info("Almanax data loaded", "count", len(almanaxData))
+
 	httpDataServer := &http.Server{
 		Addr:    fmt.Sprintf(":%s", ApiPort),
 		Handler: Router(),
@@ -159,9 +181,12 @@ func main() {
 
 	rootCmd.Flags().Bool("version", false, "Print the dodualm version.")
 	rootCmd.Flags().Bool("metrics", false, "Toggle Prometheus metrics export.")
+	rootCmd.Flags().String("dbdir", ".", "Database directory")
+	rootCmd.Flags().String("game-version", "latest", "Specify the game version to use. Default is latest.")
 
 	rootCmd.AddCommand(migrateCmd)
 	migrateCmd.AddCommand(migrateDownCmd)
+	migrateCmd.AddCommand(migrateUpCmd)
 
 	viper.SetDefault("MEILI_PORT", "7700")
 	viper.SetDefault("MEILI_MASTER_KEY", "masterKey")

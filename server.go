@@ -25,7 +25,14 @@ var (
 func loadAlmanaxData(version string) ([]mapping.MappedMultilangNPCAlmanax, error) {
 	client := github.NewClient(nil)
 
-	repRel, _, err := client.Repositories.GetReleaseByTag(context.Background(), DataRepoOwner, DataRepoName, version)
+	var repRel *github.RepositoryRelease
+	var err error
+
+	if version == "latest" {
+		repRel, _, err = client.Repositories.GetLatestRelease(context.Background(), DataRepoOwner, DataRepoName)
+	} else {
+		repRel, _, err = client.Repositories.GetReleaseByTag(context.Background(), DataRepoOwner, DataRepoName, version)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -249,6 +256,7 @@ type UpdateAlmanaxRequest struct {
 	// UpdateAlmanaxRequest then reads the files and updates the mapped_almanax.
 }
 
+// get webhook from github with secret and newest release tag, load the newest mapped almanax and iterate into the future, updating everything
 func UpdateAlmanax(w http.ResponseWriter, r *http.Request) {
 	// TODO
 }
